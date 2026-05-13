@@ -1,0 +1,90 @@
+
+from langchain_openai import ChatOpenAI
+from langchain.agents import initialize_agent, Tool
+from langchain.prompts import PromptTemplate
+import random
+import datetime
+
+# ========== Step 1: Define our Domain Functions (Tools) ==========
+
+def analyze_energy_usage(location: str) -> str:
+    """Simulates analysis of energy usage for a given location."""
+    usage = random.randint(200, 800)
+    return f"Energy usage in {location} is {usage} kWh today."
+
+def forecast_energy_demand(location: str) -> str:
+    """Forecasts next week's demand based on mock data."""
+    forecast = random.randint(700, 1000)
+    return f"Forecasted energy demand for next week in {location} is {forecast} kWh."
+
+def recommend_action(forecast: str) -> str:
+    """Recommends an energy optimization action."""
+    if "above 900" in forecast or "1000" in forecast:
+        return "Recommendation: Enable smart grid load balancing and add solar input."
+    else:
+        return "Recommendation: Maintain current grid configuration."
+
+# ========== Step 2: Create LangChain Tools ==========
+
+tools = [
+    Tool(
+        name="EnergyUsageAnalyzer",
+        func=analyze_energy_usage,
+        description="Analyzes energy usage for a given location."
+    ),
+    Tool(
+        name="EnergyDemandForecaster",
+        func=forecast_energy_demand,
+        description="Forecasts future energy demand."
+    ),
+    Tool(
+        name="EnergyActionRecommender",
+        func=recommend_action,
+        description="Recommends optimization actions based on forecast data."
+    ),
+]
+
+# ========== Step 3: Initialize the LLM (Planner) ==========
+
+llm = ChatOpenAI(model="gpt-4-turbo", temperature=0.3)
+
+# ========== Step 4: Define the Action Planner Prompt ==========
+
+planner_prompt = PromptTemplate(
+    input_variables=["objective"],
+    template=(
+        "You are an AI energy planner.\n"
+        "Objective: {objective}\n"
+        "Plan the correct sequence of tools to call to achieve this.\n"
+        "Use available tools to analyze, forecast, and recommend.\n"
+        "Explain your reasoning clearly."
+    ),
+)
+
+# ========== Step 5: Initialize the Agent (Planner + Tools) ==========
+
+agent = initialize_agent(
+    tools=tools,
+    llm=llm,
+    agent_type="zero-shot-react-description",
+    verbose=True
+)
+
+# ========== Step 6: Run Automated Planning + Chaining ==========
+
+def run_energy_planner(location: str):
+    print(f"\n=== ENERGY ACTION PLANNER START ({datetime.date.today()}) ===")
+
+    objective = f"Optimize energy usage in {location} for next week."
+    plan_text = planner_prompt.format(objective=objective)
+    
+    # Planner (LLM) decides sequence automatically
+    result = agent.invoke({"input": plan_text})
+    
+    print("\n🧠 Planner Output:")
+    print(result["output"])
+
+# ========== Step 7: Execute Example Run ==========
+
+if __name__ == "__main__":
+    run_energy_planner("Bangalore")
