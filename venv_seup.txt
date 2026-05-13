@@ -13,37 +13,29 @@ python3 -m venv venv
 
 source venv/bin/activate
 
+
 pip install \
 langchain \
 llama-index \
 openai \
 anthropic \
-faiss-cpu \
 chromadb \
 sentence-transformers \
 transformers \
 accelerate \
 peft \
-trl \
-bitsandbytes \
 datasets \
 networkx \
 neo4j \
-graspologic \
 scikit-learn \
 umap-learn \
-hdbscan \
 pymupdf \
 unstructured \
 rank-bm25 \
-FlagEmbedding \
 dspy-ai \
 langgraph \
-crewai \
 fastapi \
 uvicorn \
 redis \
 sqlalchemy \
-ollama \
-evaluate \
-rouge-score
+ollama
